@@ -103,14 +103,14 @@ void register_vector(nb::module_ &m) {
              [](const Matrix4f &m, std::pair<size_t, size_t> index) -> float {
                  if (index.first >= 4 || index.second >= 4)
                      throw nb::index_error();
-                 return m.m[index.second][index.first];
+                 return m.m[index.first][index.second];
              },
              "index"_a)
         .def("__setitem__",
              [](Matrix4f &m, std::pair<size_t, size_t> index, float value) {
                  if (index.first >= 4 || index.second >= 4)
                      throw nb::index_error();
-                 m.m[index.second][index.first] = value;
+                 m.m[index.first][index.second] = value;
              },
              "index"_a, "value"_a)
         .def_static(
@@ -146,14 +146,9 @@ void register_vector(nb::module_ &m) {
             },
             "origin"_a, "target"_a, "up"_a)
         .def("__dlpack__", [](const Matrix4f &m) {
-            Matrix4f *t = new Matrix4f(m.T());
             const size_t shape[2] = { 4, 4 };
 
-            nb::capsule owner(t, [](void *p) noexcept {
-               delete (Matrix4f *) p;
-            });
-
-            return nb::ndarray<float>(&t->m, 2, shape, owner);
+            return nb::ndarray<float>((float *) &m.m, 2, shape, nb::find(m));
          })
         .def("__repr__", [](const Matrix4f &m) {
             std::ostringstream oss;

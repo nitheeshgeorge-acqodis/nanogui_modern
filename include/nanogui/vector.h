@@ -218,13 +218,13 @@ Array<Value, Size> min(const Array<Value, Size> &a1, const Array<Value, Size> &a
     return result;
 }
 
-// Import some common Enoki types
-using Vector2f     = Array<float, 2>;
-using Vector3f     = Array<float, 3>;
-using Vector4f     = Array<float, 4>;
-using Vector2i     = Array<int32_t, 2>;
-using Vector3i     = Array<int32_t, 3>;
-using Vector4i     = Array<int32_t, 4>;
+// Create aliases for common array types
+using Vector2f = Array<float, 2>;
+using Vector3f = Array<float, 3>;
+using Vector4f = Array<float, 4>;
+using Vector2i = Array<int32_t, 2>;
+using Vector3i = Array<int32_t, 3>;
+using Vector4i = Array<int32_t, 4>;
 
 /**
  * \class Color common.h nanogui/common.h
@@ -409,7 +409,7 @@ public:
     inline operator const NVGcolor &() const;
 };
 
-/// Simple matrix class with column-major storage
+/// Simple matrix class with row-major storage
 template <typename Value_, size_t Size_> struct Matrix {
     static constexpr bool IsNanoGUI = true;
     static constexpr bool IsMatrix  = true;
@@ -425,14 +425,23 @@ template <typename Value_, size_t Size_> struct Matrix {
             m[i][i] = s;
     }
 
+    template <typename... Args, std::enable_if_t<sizeof...(Args) == Size*Size, int> = 0>
+    Matrix(Args... args) {
+        Value data[] {(Value) args...};
+        for (size_t i = 0; i < Size; ++i) {
+            for (size_t j = 0; j < Size; ++j)
+                m[i][j] = data[i*Size+j];
+        }
+    }
+
     friend Matrix operator*(const Matrix &a, const Matrix &b) {
         Matrix c;
         for (size_t i = 0; i < Size; ++i) {
             for (size_t j = 0; j < Size; ++j) {
                 Value accum = 0;
                 for (size_t k = 0; k < Size; ++k)
-                    accum += a.m[k][i] * b.m[j][k];
-                c.m[j][i] = accum;
+                    accum += a.m[i][k] * b.m[k][j];
+                c.m[i][j] = accum;
             }
         }
         return c;
@@ -442,9 +451,11 @@ template <typename Value_, size_t Size_> struct Matrix {
         Matrix result;
         for (size_t i = 0; i < Size; ++i)
             for (size_t j = 0; j < Size; ++j)
-                result.m[j][i] = m[i][j];
+                result.m[i][j] = m[j][i];
         return result;
     }
+
+    static Matrix identity() { return Matrix(1.f); }
 
     static Matrix scale(const Array<Value, Size - 1> &v) {
         Matrix result;
@@ -468,7 +479,7 @@ template <typename Value_, size_t Size_> struct Matrix {
         for (size_t i = 0; i < Size; ++i) {
             result.m[i][i] = 1.f;
             if (i < Size - 1)
-                result.m[Size - 1][i] = v[i];
+                result.m[i][Size - 1] = v[i];
         }
         return result;
     }
@@ -487,18 +498,18 @@ template <typename Value_, size_t Size_> struct Matrix {
 
         Value tmp1 = axis.x() * axis.y() * t,
               tmp2 = axis.z() * s;
-        result.m[0][1] = tmp1 + tmp2;
-        result.m[1][0] = tmp1 - tmp2;
+        result.m[1][0] = tmp1 + tmp2;
+        result.m[0][1] = tmp1 - tmp2;
 
         tmp1 = axis.x() * axis.z() * t;
         tmp2 = axis.y() * s;
-        result.m[0][2] = tmp1 - tmp2;
-        result.m[2][0] = tmp1 + tmp2;
+        result.m[2][0] = tmp1 - tmp2;
+        result.m[0][2] = tmp1 + tmp2;
 
         tmp1 = axis.y() * axis.z() * t;
         tmp2 = axis.x() * s;
-        result.m[1][2] = tmp1 + tmp2;
-        result.m[2][1] = tmp1 - tmp2;
+        result.m[2][1] = tmp1 + tmp2;
+        result.m[1][2] = tmp1 - tmp2;
 
         return result;
     }
@@ -510,8 +521,8 @@ template <typename Value_, size_t Size_> struct Matrix {
 
         Matrix trafo = Matrix::scale(Array<Value, Size>(c / aspect, c, (near_ + far_) * recip, 0.f));
 
-        trafo.m[3][2] = 2.f * near_ * far_ * recip;
-        trafo.m[2][3] = -1.f;
+        trafo.m[2][3] = 2.f * near_ * far_ * recip;
+        trafo.m[3][2] = -1.f;
 
         return trafo;
     }
@@ -531,9 +542,9 @@ template <typename Value_, size_t Size_> struct Matrix {
         result.m[1][1] = 2 * tb;
         result.m[2][2] = -2 * fn;
         result.m[3][3] = 1;
-        result.m[3][0] = -(right + left) * rl;
-        result.m[3][1] = -(top + bottom) * tb;
-        result.m[3][2] = -(far_ + near_) * fn;
+        result.m[0][3] = -(right + left) * rl;
+        result.m[1][3] = -(top + bottom) * tb;
+        result.m[2][3] = -(far_ + near_) * fn;
 
         return result;
     }
@@ -550,17 +561,17 @@ template <typename Value_, size_t Size_> struct Matrix {
 
         Matrix result(0);
         result.m[0][0] = left.x();
-        result.m[0][1] = left.y();
-        result.m[0][2] = left.z();
-        result.m[1][0] = new_up.x();
+        result.m[1][0] = left.y();
+        result.m[2][0] = left.z();
+        result.m[0][1] = new_up.x();
         result.m[1][1] = new_up.y();
-        result.m[1][2] = new_up.z();
-        result.m[2][0] = dir.x();
-        result.m[2][1] = dir.y();
+        result.m[2][1] = new_up.z();
+        result.m[0][2] = dir.x();
+        result.m[1][2] = dir.y();
         result.m[2][2] = dir.z();
-        result.m[3][0] = -dot(left, origin);
-        result.m[3][1] = -dot(new_up, origin);
-        result.m[3][2] = -dot(dir, origin);
+        result.m[0][3] = -dot(left, origin);
+        result.m[1][3] = -dot(new_up, origin);
+        result.m[2][3] = -dot(dir, origin);
         result.m[3][3] = 1.f;
         return result;
     }
@@ -594,7 +605,7 @@ Stream& operator<<(Stream &os, const Matrix<Value, Size> &m) {
             os << ' ';
         os << '[';
         for (size_t j = 0; j < Size; ++j) {
-            os << m.m[j][i];
+            os << m.m[i][j];
             if (j + 1 < Size)
                 os << ", ";
         }

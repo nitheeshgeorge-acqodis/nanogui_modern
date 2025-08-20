@@ -221,8 +221,8 @@ void ImageView::draw_contents() {
         Matrix4f::scale(Vector3f(m_image->size().x() * scale,
                                  m_image->size().y() * scale, 1.f));
 
-    m_image_shader->set_uniform("matrix_image",      Matrix4f(matrix_image));
-    m_image_shader->set_uniform("matrix_background", Matrix4f(matrix_background));
+    m_image_shader->set_uniform("matrix_image",      matrix_image.T());
+    m_image_shader->set_uniform("matrix_background", matrix_background.T());
     m_image_shader->set_uniform("background_color",  m_image_background_color);
 
     m_image_shader->begin();

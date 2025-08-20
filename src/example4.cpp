@@ -177,7 +177,7 @@ public:
 
         Matrix4f mvp = proj * view * model * model2;
 
-        m_shader->set_uniform("mvp", mvp);
+        m_shader->set_uniform("mvp", mvp.T() /* -> col-major */);
 
         // Draw 12 triangles starting at index 0
         m_shader->begin();

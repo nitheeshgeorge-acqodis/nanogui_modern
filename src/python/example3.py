@@ -169,7 +169,7 @@ class MyCanvas(ng.Canvas):
 
         mvp = proj @ view @ model @ model2
 
-        self.shader.set_buffer("mvp", mvp.T)
+        self.shader.set_buffer("mvp", mvp.T) # -> col-major
         with self.shader:
             self.shader.draw_array(ng.Shader.PrimitiveType.Triangle,
                                    0, 36, indexed=True)

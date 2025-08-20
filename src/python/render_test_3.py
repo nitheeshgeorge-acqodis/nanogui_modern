@@ -142,7 +142,7 @@ class MyScreen(ng.Screen):
             )
 
             mvp = proj @ view @ model
-            self.shader.set_buffer("mvp", mvp.T)
+            self.shader.set_buffer("mvp", mvp.T) # -> col-major
             with self.shader:
                 self.shader.draw_array(ng.Shader.PrimitiveType.Triangle,
                                        0, 6, indexed=True)
