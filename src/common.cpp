@@ -174,6 +174,7 @@ void mainloop(float refresh) {
                             kv.second->redraw();
                     }
                 }
+
                 for (auto kv : __nanogui_screens)
                     kv.second->redraw();
             }

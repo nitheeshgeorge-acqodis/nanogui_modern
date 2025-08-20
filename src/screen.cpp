@@ -598,9 +598,8 @@ void Screen::draw_teardown() {
 }
 
 void Screen::draw_all() {
+    std::lock_guard<std::mutex> guard(m_redraw_mutex);
     if (m_redraw) {
-        m_redraw = false;
-
 #if defined(NANOGUI_USE_METAL)
         void *pool = autorelease_init();
 #endif
@@ -613,6 +612,7 @@ void Screen::draw_all() {
 #if defined(NANOGUI_USE_METAL)
         autorelease_release(pool);
 #endif
+        m_redraw = false;
     }
 }
 
@@ -721,11 +721,12 @@ bool Screen::resize_event(const Vector2i& size) {
 }
 
 void Screen::redraw() {
+    std::lock_guard<std::mutex> guard(m_redraw_mutex);
     if (!m_redraw) {
-        m_redraw = true;
         #if !defined(EMSCRIPTEN)
             glfwPostEmptyEvent();
         #endif
+        m_redraw = true;
     }
 }
 
