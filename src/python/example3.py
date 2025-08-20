@@ -9,25 +9,21 @@
 # All rights reserved. Use of this source code is governed by a
 # BSD-style license that can be found in the LICENSE.txt file.
 
-import nanogui
+import nanogui as ng
 import random
 import math
 import gc
 
-from nanogui import Canvas, Shader, RenderPass, Screen, Window, \
-    GroupLayout, Color, Widget, BoxLayout, Orientation, Alignment, \
-    Button, Matrix4f
-
 from nanogui import glfw
 
-class MyCanvas(Canvas):
+class MyCanvas(ng.Canvas):
     def __init__(self, parent):
         super(MyCanvas, self).__init__(parent, 1)
 
         try:
             import numpy as np
 
-            if nanogui.api == 'opengl':
+            if ng.api == 'opengl':
                 vertex_shader = """
                     #version 330
                     uniform mat4 mvp;
@@ -48,7 +44,7 @@ class MyCanvas(Canvas):
                         color = frag_color;
                     }
                     """
-            elif nanogui.api == 'gles2' or nanogui.api == 'gles3':
+            elif ng.api == 'gles2' or nanogui.api == 'gles3':
                 vertex_shader = """
                     precision highp float;
                     uniform mat4 mvp;
@@ -68,7 +64,7 @@ class MyCanvas(Canvas):
                         gl_FragColor = frag_color;
                     }
                     """
-            elif nanogui.api == 'metal':
+            elif ng.api == 'metal':
                 vertex_shader = """
                     using namespace metal;
                     struct VertexOut {
@@ -102,7 +98,7 @@ class MyCanvas(Canvas):
             else:
                 raise Exception("Unknown graphics API!")
 
-            self.shader = Shader(
+            self.shader = ng.Shader(
                 self.render_pass(),
                 # An identifying name
                 "a_simple_shader",
@@ -147,24 +143,24 @@ class MyCanvas(Canvas):
             return
         import numpy as np
 
-        view = Matrix4f.look_at(
+        view = ng.Matrix4f.look_at(
             origin=[0, -2, -10],
             target=[0, 0, 0],
             up=[0, 1, 0]
         )
 
-        model = Matrix4f.rotate(
+        model = ng.Matrix4f.rotate(
             [0, 1, 0],
             glfw.getTime()
         )
 
-        model2 = Matrix4f.rotate(
+        model2 = ng.Matrix4f.rotate(
             [1, 0, 0],
             self.rotation
         )
 
         size = self.size()
-        proj = Matrix4f.perspective(
+        proj = ng.Matrix4f.perspective(
             fov=25 * np.pi / 180,
             near=0.1,
             far=20,
@@ -175,32 +171,32 @@ class MyCanvas(Canvas):
 
         self.shader.set_buffer("mvp", mvp.T)
         with self.shader:
-            self.shader.draw_array(Shader.PrimitiveType.Triangle,
+            self.shader.draw_array(ng.Shader.PrimitiveType.Triangle,
                                    0, 36, indexed=True)
 
 
-class TestApp(Screen):
+class TestApp(ng.Screen):
     def __init__(self):
         super(TestApp, self).__init__((800, 600), "NanoGUI Test", False)
 
-        window = Window(self, "Canvas widget demo")
+        window = ng.Window(self, "Canvas widget demo")
         window.set_position((15, 15))
-        window.set_layout(GroupLayout())
+        window.set_layout(ng.GroupLayout())
 
         self.canvas = MyCanvas(window)
-        self.canvas.set_background_color(Color(0.5, 0.5, 0.5, 1.0))
+        self.canvas.set_background_color(ng.Color(0.5, 0.5, 0.5, 1.0))
         self.canvas.set_size((400, 400))
 
-        tools = Widget(window)
-        tools.set_layout(BoxLayout(Orientation.Horizontal,
-                                  Alignment.Middle, 0, 5))
+        tools = ng.Widget(window)
+        tools.set_layout(ng.BoxLayout(ng.Orientation.Horizontal,
+                                      ng.Alignment.Middle, 0, 5))
 
-        b0 = Button(tools, "Random Background")
+        b0 = ng.Button(tools, "Random Background")
         def cb0():
-            self.canvas.set_background_color(Color(random.random(), random.random(), random.random(), 1.0))
+            self.canvas.set_background_color(ng.Color(random.random(), random.random(), random.random(), 1.0))
         b0.set_callback(cb0)
 
-        b1 = Button(tools, "Random Rotation")
+        b1 = ng.Button(tools, "Random Rotation")
         def cb1():
             self.canvas.rotation = random.random() * math.pi
         b1.set_callback(cb1)
@@ -217,11 +213,11 @@ class TestApp(Screen):
         return False
 
 if __name__ == "__main__":
-    nanogui.init()
+    ng.init()
     test = TestApp()
     test.draw_all()
     test.set_visible(True)
-    nanogui.mainloop(refresh=1 / 60.0 * 1000)
+    ng.mainloop(refresh=1 / 60.0 * 1000)
     del test
     gc.collect()
-    nanogui.shutdown()
+    ng.shutdown()

@@ -2,22 +2,21 @@
 
 import sys
 sys.path.append('python')
-import nanogui
-from nanogui import Shader, Texture, RenderPass, Screen, Matrix4f
+import nanogui as ng
 from nanogui import glfw
 import numpy as np
 from PIL import Image
 import os
 
 
-class MyScreen(Screen):
+class MyScreen(ng.Screen):
     def __init__(self):
-        Screen.__init__(self,
+        ng.Screen.__init__(self,
             size=[512, 512],
             caption="Unnamed"
         )
 
-        if nanogui.api == 'opengl':
+        if ng.api == 'opengl':
             vertex_program = '''
                 #version 330
                 in vec3 position;
@@ -41,7 +40,7 @@ class MyScreen(Screen):
                     fragColor = texture(albedo_texture, uv_frag);
                 }
             '''
-        elif nanogui.api == 'metal':
+        elif ng.api == 'metal':
             vertex_program = '''
                 using namespace metal;
 
@@ -80,18 +79,18 @@ class MyScreen(Screen):
         image_fname = os.path.join(base_dir, "resources/icons/icon1.png")
         image = np.array(Image.open(image_fname))
 
-        self.albedo_texture = Texture(
-            pixel_format=Texture.PixelFormat.RGBA,
-            component_format=Texture.ComponentFormat.UInt8,
+        self.albedo_texture = ng.Texture(
+            pixel_format=ng.Texture.PixelFormat.RGBA,
+            component_format=ng.Texture.ComponentFormat.UInt8,
             size=image.shape[:2]
         )
         self.albedo_texture.upload(image)
 
-        self.render_pass = RenderPass(
+        self.render_pass = ng.RenderPass(
             color_targets=[self]
         )
 
-        self.shader = Shader(
+        self.shader = ng.Shader(
             self.render_pass,
             "test_shader",
             vertex_program,
@@ -122,19 +121,20 @@ class MyScreen(Screen):
 
     def draw_contents(self):
         with self.render_pass:
-            view = Matrix4f.look_at(
+            view = ng.Matrix4f.look_at(
                 origin=[0, -2, -10],
                 target=[0, 0, 0],
                 up=[0, 1, 0]
             )
+            import math
 
-            model = Matrix4f.rotate(
+            model = ng.Matrix4f.rotate(
                 [0, 1, 0],
-                glfw.getTime() * 0.01
+                math.sin(glfw.getTime())
             )
 
             fbsize = self.framebuffer_size()
-            proj = Matrix4f.perspective(
+            proj = ng.Matrix4f.perspective(
                 fov=25 * np.pi / 180,
                 near=0.1,
                 far=20,
@@ -144,7 +144,7 @@ class MyScreen(Screen):
             mvp = proj @ view @ model
             self.shader.set_buffer("mvp", mvp.T)
             with self.shader:
-                self.shader.draw_array(Shader.PrimitiveType.Triangle,
+                self.shader.draw_array(ng.Shader.PrimitiveType.Triangle,
                                        0, 6, indexed=True)
 
     def keyboard_event(self, key, scancode, action, modifiers):
@@ -162,8 +162,12 @@ class MyScreen(Screen):
         return True
 
 
-nanogui.init()
-s = MyScreen()
-s.set_visible(True)
-nanogui.mainloop(1 / 60.0 * 1000)
-nanogui.shutdown()
+def run():
+    ng.init()
+    s = MyScreen()
+    s.set_visible(True)
+    ng.mainloop(1 / 60.0 * 1000)
+    ng.shutdown()
+
+if __name__ == '__main__':
+    run()

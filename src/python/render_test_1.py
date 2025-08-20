@@ -2,17 +2,16 @@
 
 import sys
 sys.path.append('python')
-import nanogui
-from nanogui import Shader, Texture, RenderPass, Screen
+import nanogui as ng
 import numpy as np
 from PIL import Image
 
 
-class MyScreen(Screen):
+class MyScreen(ng.Screen):
     def __init__(self):
-        Screen.__init__(self, [512, 512], "Unnamed")
+        ng.Screen.__init__(self, [512, 512], "Unnamed")
 
-        if nanogui.api == 'opengl':
+        if ng.api == 'opengl':
             vertex_program = '''
                 #version 330
                 in vec3 position;
@@ -31,7 +30,7 @@ class MyScreen(Screen):
                     fragColor = color;
                 }
             '''
-        elif nanogui.api == 'metal':
+        elif ng.api == 'metal':
             vertex_program = '''
                 using namespace metal;
 
@@ -60,12 +59,12 @@ class MyScreen(Screen):
                 }
             '''
 
-        self.render_pass = RenderPass([self])
+        self.render_pass = ng.RenderPass([self])
         self.render_pass.set_viewport(
             [10, 10], self.framebuffer_size() - [10, 20]
         )
 
-        self.shader = Shader(
+        self.shader = ng.Shader(
             self.render_pass,
             "test_shader",
             vertex_program,
@@ -85,12 +84,16 @@ class MyScreen(Screen):
         with self.render_pass:
             with self.shader:
                 if False:
-                    self.shader.draw_array(Shader.PrimitiveType.Triangle, 0, 3)
+                    self.shader.draw_array(ng.Shader.PrimitiveType.Triangle, 0, 3)
                 else:
-                    self.shader.draw_array(Shader.PrimitiveType.Triangle, 0, 3, indexed=True)
+                    self.shader.draw_array(ng.Shader.PrimitiveType.Triangle, 0, 3, indexed=True)
 
-nanogui.init()
-s = MyScreen()
-s.set_visible(True)
-nanogui.mainloop()
-nanogui.shutdown()
+def run():
+    ng.init()
+    s = MyScreen()
+    s.set_visible(True)
+    ng.mainloop()
+    ng.shutdown()
+
+if __name__ == '__main__':
+    run()

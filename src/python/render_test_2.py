@@ -3,21 +3,20 @@
 
 import sys
 sys.path.append('python')
-import nanogui
-from nanogui import Shader, Texture, RenderPass, Screen, Matrix4f
+import nanogui as ng
 from nanogui import glfw
 import numpy as np
 
 
-class MyScreen(Screen):
+class MyScreen(ng.Screen):
     def __init__(self):
-        Screen.__init__(self,
+        ng.Screen.__init__(self,
             size=[512, 512],
             caption="Unnamed",
             depth_buffer=True
         )
 
-        if nanogui.api == 'opengl':
+        if ng.api == 'opengl':
             vertex_program = '''
                 #version 330
                 in vec3 position;
@@ -40,7 +39,7 @@ class MyScreen(Screen):
                     fragColor = color_frag;
                 }
             '''
-        elif nanogui.api == 'metal':
+        elif ng.api == 'metal':
             vertex_program = '''
                 using namespace metal;
 
@@ -73,12 +72,12 @@ class MyScreen(Screen):
                 }
             '''
 
-        self.render_pass = RenderPass(
+        self.render_pass = ng.RenderPass(
             color_targets=[self],
             depth_target=self
         )
 
-        self.shader = Shader(
+        self.shader = ng.Shader(
             self.render_pass,
             "test_shader",
             vertex_program,
@@ -117,19 +116,19 @@ class MyScreen(Screen):
 
     def draw_contents(self):
         with self.render_pass:
-            view = Matrix4f.look_at(
+            view = ng.Matrix4f.look_at(
                 origin=[0, -2, -10],
                 target=[0, 0, 0],
                 up=[0, 1, 0]
             )
 
-            model = Matrix4f.rotate(
+            model = ng.Matrix4f.rotate(
                 [0, 1, 0],
                 glfw.getTime()
             )
 
             fbsize = self.framebuffer_size()
-            proj = Matrix4f.perspective(
+            proj = ng.Matrix4f.perspective(
                 fov=25 * np.pi / 180,
                 near=0.1,
                 far=20,
@@ -139,7 +138,7 @@ class MyScreen(Screen):
             mvp = proj @ view @ model
             self.shader.set_buffer("mvp", mvp.T)
             with self.shader:
-                self.shader.draw_array(Shader.PrimitiveType.Triangle,
+                self.shader.draw_array(ng.Shader.PrimitiveType.Triangle,
                                        0, 36, indexed=True)
 
     def keyboard_event(self, key, scancode, action, modifiers):
@@ -156,9 +155,12 @@ class MyScreen(Screen):
         super(MyScreen, self).resize_event(size)
         return True
 
+def run():
+    ng.init()
+    s = MyScreen()
+    s.set_visible(True)
+    ng.mainloop(1 / 60.0 * 1000)
+    ng.shutdown()
 
-nanogui.init()
-s = MyScreen()
-s.set_visible(True)
-nanogui.mainloop(1 / 60.0 * 1000)
-nanogui.shutdown()
+if __name__ == '__main__':
+    run()

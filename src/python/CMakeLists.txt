@@ -11,6 +11,7 @@ add_definitions(-DNANOGUI_PYTHON)
 
 nanobind_add_module(nanogui-python MODULE
   NB_STATIC
+  NB_DOMAIN nanogui
   LTO
   main.cpp
   glfw.cpp
@@ -46,7 +47,20 @@ endif()
 
 if (NANOGUI_INSTALL)
   install(TARGETS nanogui-python
-          LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} 
+          LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
           ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
   set_target_properties(nanogui-python PROPERTIES INSTALL_RPATH "${NANOGUI_ORIGIN}")
 endif()
+
+add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/../../nanogui/__init__.py
+                   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/../../nanogui/__init__.py
+                                                    ${CMAKE_CURRENT_BINARY_DIR}/../../nanogui/__init__.py
+                   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../../nanogui/__init__.py)
+
+nanobind_add_stub(
+  nanobind-python-stub
+  MODULE nanogui
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/../../nanogui/__init__.pyi
+  PYTHON_PATH $<TARGET_FILE_DIR:nanogui-python>/..
+  DEPENDS nanogui-python ${CMAKE_CURRENT_BINARY_DIR}/../../nanogui/__init__.py
+)
