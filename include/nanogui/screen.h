@@ -16,6 +16,7 @@
 
 #include <nanogui/widget.h>
 #include <nanogui/texture.h>
+#include <mutex>
 
 NAMESPACE_BEGIN(nanogui)
 
@@ -294,6 +295,7 @@ protected:
     bool m_stencil_buffer;
     bool m_float_buffer;
     bool m_redraw;
+    std::mutex m_redraw_mutex;
     std::function<void(Vector2i)> m_resize_callback;
 #if defined(NANOGUI_USE_METAL)
     void *m_metal_texture = nullptr;

@@ -12,8 +12,7 @@
 import nanogui
 import math
 import gc
-
-from nanogui import Screen, FormHelper
+import nanogui as ng
 
 bvar = True
 ivar = 12345678
@@ -38,11 +37,11 @@ use_gl_4_1 = False # Set to True to create an OpenGL 4.1 context.
 if use_gl_4_1:
     # NanoGUI presents many options for you to utilize at your discretion.
     # See include/nanogui/screen.h for what all of the options are.
-    screen = Screen((500, 700), 'NanoGUI test [GL 4.1]', gl_major=4, gl_minor=1)
+    screen = ng.Screen((500, 700), 'NanoGUI test [GL 4.1]', gl_major=4, gl_minor=1)
 else:
-    screen = Screen((500, 700), 'NanoGUI test')
+    screen = ng.Screen((500, 700), 'NanoGUI test')
 
-gui = FormHelper(screen)
+gui = ng.FormHelper(screen)
 window = gui.add_window((10, 10), 'Form helper example')
 
 gui.add_group('Basic types')
@@ -70,7 +69,7 @@ screen.set_visible(True)
 screen.perform_layout()
 window.center()
 
-nanogui.mainloop(refresh=0)
+ng.mainloop(refresh=0)
 screen = gui = window = None
 gc.collect()
-nanogui.shutdown()
+ng.shutdown()

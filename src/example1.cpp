@@ -551,7 +551,7 @@ public:
                            (float) m_size.y() / (float) m_size.x() * 0.25f, 0.25f, 0.25f)) *
                        Matrix4f::rotate(Vector3f(0, 0, 1), (float) glfwGetTime());
 
-        m_shader->set_uniform("mvp", mvp);
+        m_shader->set_uniform("mvp", mvp.T() /* -> col-major */);
 
         m_render_pass->resize(framebuffer_size());
         m_render_pass->begin();

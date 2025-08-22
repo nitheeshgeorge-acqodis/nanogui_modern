@@ -17,36 +17,37 @@ import gc
 
 import nanogui
 from nanogui import Screen, Window, Widget, GridLayout, VScrollPanel, Button
-from nanogui import entypo
+from nanogui import icons
+import nanogui as ng
 
-if __name__ == "__main__":
-    nanogui.init()
+def run():
+    ng.init()
 
     width      = 1000
     half_width = width // 2
     height     = 800
 
     # create a fixed size screen with one window
-    screen = Screen((width, height), "NanoGUI Icons", False)
-    window = Window(screen, "All Icons")
+    screen = ng.Screen((width, height), "NanoGUI Icons", False)
+    window = ng.Window(screen, "All Icons")
     window.set_position((0, 0))
     window.set_fixed_size((width, height))
 
     # attach a vertical scroll panel
-    vscroll = VScrollPanel(window)
+    vscroll = ng.VScrollPanel(window)
     vscroll.set_fixed_size((width, height))
 
     # vscroll should only have *ONE* child. this is what `wrapper` is for
-    wrapper = Widget(vscroll)
+    wrapper = ng.Widget(vscroll)
     wrapper.set_fixed_size((width, height))
     wrapper.set_layout(GridLayout())  # defaults: 2 columns
 
     # NOTE: don't __dict__ crawl in real code!
     # this is just because it's more convenient to do this for enumerating all
     # of the icons -- see cpp example for alternative...
-    for key in entypo.__dict__.keys():
-        if key.startswith("ICON_"):
-            b = Button(wrapper, "entypo.{0}".format(key), entypo.__dict__[key])
+    for key in icons.__dict__.keys():
+        if key.startswith("FA_"):
+            b = ng.Button(wrapper, "icons.{0}".format(key), icons.__dict__[key])
             b.set_icon_position(Button.IconPosition.Left)
             b.set_fixed_width(half_width)
 
@@ -54,9 +55,8 @@ if __name__ == "__main__":
     screen.draw_all()
     screen.set_visible(True)
 
-    nanogui.mainloop()
+    ng.mainloop()
+    ng.shutdown()
 
-    del screen
-    gc.collect()
-
-    nanogui.shutdown()
+if __name__ == "__main__":
+    run()

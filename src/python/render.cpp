@@ -224,11 +224,10 @@ void register_render(nb::module_ &m) {
         .def("upload_sub_region", &texture_upload_sub_region, D(Texture, upload, origin))
         .def("generate_mipmap", &Texture::generate_mipmap, D(Texture, generate_mipmap))
         .def("resize", &Texture::resize, D(Texture, resize))
-#if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES)
         .def("texture_handle", &Texture::texture_handle)
+#if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES)
         .def("renderbuffer_handle", &Texture::renderbuffer_handle)
 #elif defined(NANOGUI_USE_METAL)
-        .def("texture_handle", &Texture::texture_handle)
         .def("sampler_state_handle", &Texture::sampler_state_handle)
 #endif
         ;
