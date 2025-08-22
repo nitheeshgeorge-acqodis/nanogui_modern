@@ -138,7 +138,7 @@ public:
 
 #if defined(_WIN32)
         /// Executable is in the Debug/Release/.. subdirectory
-        std::string resources_folder_path("../icons");
+        std::string resources_folder_path("../resources/icons");
 #else
         std::string resources_folder_path("./icons");
 #endif
